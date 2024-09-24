@@ -1,5 +1,3 @@
-// import { User } from '../../domain/entities/User';
-
 import axios from "axios";
 import { ExpenseRepository } from "../../domain/ports/Expense.repository";
 import { UserRepository } from "../../domain/ports/User.repository";
@@ -15,6 +13,8 @@ export class ProcessMessageUseCase {
       String(telegramId),
     );
 
+    if (!user) return "El usuario no esta en la whitelist";
+
     const response = await axios.post(`${process.env.API_BOT_URL}/process`, {
       telegram_id: telegramId,
       text: message,
@@ -24,13 +24,14 @@ export class ProcessMessageUseCase {
 
     const expenseBody = botResponse.json;
 
+    if (!expenseBody.category) return botResponse.message;
+
     await this.expenseRepository.createExpense({
       ...expenseBody,
       userId: user.id,
     });
-    const result = botResponse.message;
 
-    return result;
+    return botResponse.message;
   }
 
   static create(

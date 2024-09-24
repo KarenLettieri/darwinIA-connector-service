@@ -1,6 +1,7 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 import { UserRepository } from "../../domain/ports/User.repository";
+import { User } from "../../domain/entities/User";
 
 export class SupabaseUserRepository implements UserRepository {
   private supabaseClient: SupabaseClient;
@@ -32,10 +33,15 @@ export class SupabaseUserRepository implements UserRepository {
         .from("users")
         .select("*")
         .eq("telegram_id", providerId);
-      if (error) {
-        throw new Error("Error al obtener el usuario:" + error.message);
+
+      if (error || !data || data.length === 0) {
+        throw new Error(
+          "Error al obtener el usuario:" +
+            (error ? error.message : "No data found"),
+        );
       }
-      return data[0];
+
+      return User.create(data[0].id, data[0].telegram_id);
     } catch (error) {
       console.error("Error al obtener el usuario:", error);
       return null;

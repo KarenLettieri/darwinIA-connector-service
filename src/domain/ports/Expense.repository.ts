@@ -1,3 +1,5 @@
+import { Expense } from "../entities/Expense";
+
 export interface ExpenseRepository {
-  createExpense(expense: any): Promise<void>;
+  createExpense(expense: Partial<Expense>): Promise<void>;
 }
